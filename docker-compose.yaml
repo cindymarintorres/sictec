@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sictec_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-sictecuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sictecpass}
+      POSTGRES_DB: ${DB_NAME:-sictec}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sictec_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sictecuser} -d ${DB_NAME:-sictec}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    container_name: sictec_api
+    restart: unless-stopped
+    command: sh -c "composer install --no-interaction && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment: &api_env
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      APP_KEY: ${APP_KEY}          # sin fallback, para que falle si no está definida
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_NAME:-sictec}
+      DB_USERNAME: ${DB_USER:-sictecuser}
+      DB_PASSWORD: ${DB_PASSWORD:-sictecpass}
+      QUEUE_CONNECTION: database
+      SRI_CONSULTA_URL: ${SRI_CONSULTA_URL}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
+    volumes: &api_volumes
+      - ./api:/var/www/html
+      - /var/www/html/vendor
+    networks:
+      - sictec_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    container_name: sictec_worker
+    restart: unless-stopped
+    # Espera a que la API termine composer install + migraciones antes de arrancar el worker
+    command: sh -c "sleep 10 && php artisan queue:work --queue=sri-consultas --tries=3 --backoff=5 --timeout=120"
+    depends_on:
+      api:
+        condition: service_healthy
+    environment: *api_env
+    volumes: *api_volumes
+    networks:
+      - sictec_network
+
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/web/Dockerfile
+    container_name: sictec_web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3001}:3001"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    networks:
+      - sictec_network
+
+networks:
+  sictec_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
