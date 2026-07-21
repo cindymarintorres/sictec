@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     libpq-dev \
     libzip-dev \
     oniguruma-dev \
+    wget \
     $PHPIZE_DEPS \
     && docker-php-ext-install pdo pdo_pgsql pgsql zip mbstring
 

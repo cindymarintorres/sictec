@@ -4,17 +4,21 @@ services:
     container_name: sictec_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-sictecuser}
+      POSTGRES_USER: ${DB_USERNAME:-sictecuser}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-sictecpass}
-      POSTGRES_DB: ${DB_NAME:-sictec}
+      POSTGRES_DB: ${DB_DATABASE:-sictec}
     ports:
-      - "${DB_PORT:-5433}:5432"
+      - "${DB_PORT:-3002}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - sictec_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sictecuser} -d ${DB_NAME:-sictec}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USERNAME:-sictecuser} -d ${DB_DATABASE:-sictec}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,26 +36,32 @@ services:
     ports:
       - "${API_PORT:-8000}:8000"
     environment: &api_env
+      APP_NAME: ${APP_NAME:-SICTEC}
       APP_ENV: local
       APP_DEBUG: "true"
       APP_URL: ${APP_URL:-http://localhost:8000}
-      APP_KEY: ${APP_KEY}          # sin fallback, para que falle si no está definida
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${DB_NAME:-sictec}
-      DB_USERNAME: ${DB_USER:-sictecuser}
+      APP_KEY: ${APP_KEY}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stack}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      SESSION_DRIVER: ${SESSION_DRIVER:-database}
+      CACHE_STORE: ${CACHE_STORE:-database}
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE:-sictec}
+      DB_USERNAME: ${DB_USERNAME:-sictecuser}
       DB_PASSWORD: ${DB_PASSWORD:-sictecpass}
       QUEUE_CONNECTION: database
       SRI_CONSULTA_URL: ${SRI_CONSULTA_URL}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
     volumes: &api_volumes
       - ./api:/var/www/html
-      - /var/www/html/vendor
+      - vendor_data:/var/www/html/vendor
     networks:
       - sictec_network
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/api/health || exit 1"]
+      test:
+        ["CMD-SHELL", "wget -qO- http://localhost:8000/up || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -64,7 +74,7 @@ services:
     container_name: sictec_worker
     restart: unless-stopped
     # Espera a que la API termine composer install + migraciones antes de arrancar el worker
-    command: sh -c "sleep 10 && php artisan queue:work --queue=sri-consultas --tries=3 --backoff=5 --timeout=120"
+    command: sh -c "php artisan queue:work --queue=sri-consultas --tries=3 --backoff=5 --timeout=120"
     depends_on:
       api:
         condition: service_healthy
@@ -82,7 +92,9 @@ services:
     ports:
       - "${WEB_PORT:-3001}:3001"
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+      NODE_ENV: development
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+      VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://sictec_api:3000}
     volumes:
       - ./web:/app
       - /app/node_modules
@@ -95,3 +107,4 @@ networks:
 
 volumes:
   postgres_data:
+  vendor_data:

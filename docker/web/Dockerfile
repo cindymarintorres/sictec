@@ -1,7 +1,7 @@
 FROM cemarin/node-base:20-alpine
 ENV CI=true
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
@@ -14,7 +14,6 @@ RUN pnpm install
 # bind mount desde docker-compose.yaml (./web:/app), y ese mount sobrescribe
 # cualquier archivo copiado en build time. Este COPY solo deja la imagen
 # utilizable de forma standalone (ej. si algún día corres el contenedor sin compose).
-COPY web/ .
 
 EXPOSE 3001
 

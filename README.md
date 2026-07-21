@@ -137,6 +137,14 @@ docker compose stop
 ### 📄 Un solo `.env` en la raíz
 Docker Compose lo inyecta en los contenedores `api`, `worker` y `web` mediante el bloque YAML anclado (`&api_env`), evitando duplicar las mismas variables entre servicios.
 
+### 🔗 Symlink de `.env` dentro de `api/`
+Laravel busca `.env` en la raíz de su propio directorio (`api/.env`) cuando se ejecuta localmente sin Docker (por ejemplo, para correr `artisan` o `composer` sueltos). Para evitar duplicar variables entre el `.env` raíz y uno propio de `api/`, se crea un symlink:
+```bash
+cd api
+ln -s ../.env .env
+```
+Esto no afecta a Docker: dentro de los contenedores las variables llegan vía `environment: &api_env` en `docker-compose.yaml`, no por lectura de archivo. El symlink es solo para conveniencia en desarrollo local fuera de contenedores.
+
 ### 🚫 Sin Redis
 Con 1-2 usuarios y unos cientos/miles de RUC por lote, el driver `database` de Laravel Queue es suficiente. Se evita un servicio adicional que mantener; se puede migrar a Redis después sin reescribir los Jobs, solo cambiando `QUEUE_CONNECTION`.
 
