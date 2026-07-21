@@ -14,6 +14,7 @@
 |:---|:---|:---|
 | **Frontend** | ⚛️ React 19 + Vite | SPA, upload de archivo + progreso + descarga |
 | **Server state** | 📡 React Query | Polling del estado del lote en proceso |
+| **Routing** | 🧭 React Router v6 | Rutas para navegación |
 | **Formularios** | 📋 React Hook Form + Zod | Validación del formulario de subida |
 | **Estado local** | 🐻 Zustand | Estado de UI ligero |
 | **Lenguaje** | 📘 TypeScript estricto | `strict: true` |
@@ -118,7 +119,7 @@ docker compose stop
 
 ---
 
-## 📡 Endpoints de la API (planeados)
+## 📡 Endpoints de la API
 
 ```
 📤 Lotes
@@ -127,7 +128,7 @@ docker compose stop
   GET    /api/lotes/{id}/descargar   # Descarga el archivo con la columna ACTIVIDAD_ECONOMICA agregada
 
 ❤️ Health
-  GET    /api/health
+  GET    /up                         #Ruta proporcionada por Laravel
 ```
 
 ---
@@ -150,9 +151,6 @@ Con 1-2 usuarios y unos cientos/miles de RUC por lote, el driver `database` de L
 
 ### 🧑‍🏭 Worker en un contenedor separado
 El procesamiento de la cola (`php artisan queue:work`) corre en su propio servicio (`worker`), no como proceso en segundo plano dentro del contenedor de la API. Así, si el worker falla, Docker lo reinicia de forma independiente (`restart: unless-stopped`) sin afectar la disponibilidad de la API.
-
-### 🌐 Consulta directa al SRI, sin Selenium/Playwright
-Se confirmó que el endpoint `ConsolidadoContribuyente/obtenerPorNumerosRuc` del SRI responde sin necesitar cookie de sesión ni token — es una petición HTTP simple. Esto descarta la necesidad de automatización de navegador para la consulta de RUC.
 
 ### 🚫 Sin caché persistente de RUC entre archivos
 El alcance real del proyecto es transformar un archivo por corrida (Excel entra → Excel con columna de categoría sale), sin dashboard ni histórico acumulado. La deduplicación de RUC ocurre solo dentro de la misma corrida (batch de Jobs), no persiste entre archivos distintos.
