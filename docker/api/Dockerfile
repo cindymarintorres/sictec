@@ -7,9 +7,13 @@ RUN apk add --no-cache \
     libpq-dev \
     libzip-dev \
     oniguruma-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
     wget \
     $PHPIZE_DEPS \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip mbstring
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip mbstring gd
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
