@@ -122,7 +122,7 @@ docker compose stop
 ## 📡 Endpoints de la API
 
 ```
-📤 Consulta RUC en SRI
+👤 Consulta RUC en SRI
   GET   /api/sri/valida/{ruc}        # Valida RUC mediante API del SRI
   GET   /api/sri/consulta/{ruc}      # Consulta RUC mediante API del SRI
 
@@ -165,3 +165,5 @@ La clasificación de `actividadEconomicaPrincipal` → categoría de gasto se re
 ---
 
 ## 📋 Estado del proyecto
+
+Este proyecto está en desarrollo activo como parte de un portafolio de ingeniería de software. La arquitectura, decisiones de diseño y progreso de implementación están documentados en el historial de commits.
