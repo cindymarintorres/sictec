@@ -122,8 +122,12 @@ docker compose stop
 ## 📡 Endpoints de la API
 
 ```
+📤 Consulta RUC en SRI
+  GET   /api/sri/valida/{ruc}        # Valida RUC mediante API del SRI
+  GET   /api/sri/consulta/{ruc}      # Consulta RUC mediante API del SRI
+
 📤 Lotes
-  POST   /api/lotes                 # Sube el Excel/CSV, dispara el batch de Jobs
+  POST   /api/lotes                  # Sube el Excel/CSV, dispara el batch de Jobs
   GET    /api/lotes/{id}             # Estado del batch (procesados / total)
   GET    /api/lotes/{id}/descargar   # Descarga el archivo con la columna ACTIVIDAD_ECONOMICA agregada
 
