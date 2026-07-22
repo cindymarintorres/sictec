@@ -41,6 +41,7 @@ services:
       APP_DEBUG: "true"
       APP_URL: ${APP_URL:-http://localhost:8000}
       APP_KEY: ${APP_KEY}
+      SICTEC_API_KEY: ${SICTEC_API_KEY}
       LOG_CHANNEL: ${LOG_CHANNEL:-stack}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       SESSION_DRIVER: ${SESSION_DRIVER:-database}
@@ -93,8 +94,8 @@ services:
       - "${WEB_PORT:-3001}:3001"
     environment:
       NODE_ENV: development
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
-      VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://sictec_api:3000}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+      VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://sictec_api:8000}
     volumes:
       - ./web:/app
       - /app/node_modules
