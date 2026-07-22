@@ -35,7 +35,7 @@ return [
         ],
     ],
     'sri' => [
-        'api_url' => env('SRI_BASE_URL'),
+        'api_url' => env('SRI_CONSULTA_URL'),
     ],
 
 ];
