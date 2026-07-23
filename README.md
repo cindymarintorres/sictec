@@ -162,6 +162,21 @@ El alcance real del proyecto es transformar un archivo por corrida (Excel entra 
 ### 🗂️ Motor de clasificación por diccionario, sin IA
 La clasificación de `actividadEconomicaPrincipal` → categoría de gasto se resuelve con un diccionario de palabras clave (`config/categorias.php`), sin depender de un modelo de IA externo. Se descartó el uso de IA para mantener el sistema 100% predecible, gratuito y sin dependencia de servicios de terceros.
 
+## 🔐 Autenticación de la API
+
+Los endpoints bajo `/api/*` (excepto `/api/health`) requieren el header `X-API-KEY`.
+
+En **desarrollo local**, el frontend no maneja la key directamente: el proxy
+de Vite la inyecta a cada petición antes de reenviarla a Laravel, así el
+valor nunca llega al navegador ni queda expuesto en el bundle de JS. La key
+vive solo en variables de entorno del proceso Node (`SICTEC_API_KEY`), no en
+variables `VITE_*` (esas sí terminan visibles en el cliente).
+
+**Fuera de este entorno de desarrollo** (si se sirve la app detrás de un
+proxy real como Nginx, o el frontend deja de correr con `vite dev`), este
+mecanismo no aplica — el header tendría que inyectarse en ese proxy en su
+lugar, o resolverse en el backend que sirve el frontend.
+
 ---
 
 ## 📋 Estado del proyecto
