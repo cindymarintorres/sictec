@@ -4,9 +4,13 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { FullscreenSpinner } from "@/components/shared/FullscreenSpinner";
 
 const UploadPage = lazy(() =>
-  import("@/features/upload/UploadPage").then((m) => ({
+  import("@/features/upload/pages/UploadPage").then((m) => ({
     default: m.UploadPage,
   })),
+);
+
+const LoteStatusPage = lazy(() =>
+  import("@/features/upload/pages/LoteStatusPage").then((m) => ({ default: m.LoteStatusPage })),
 );
 
 const AppRouter = () => (
@@ -15,6 +19,8 @@ const AppRouter = () => (
       <Route element={<AppLayout />}>
         {/* Pública */}
         <Route path="/" element={<UploadPage />} />
+        <Route path="/lotes/:batchId" element={<LoteStatusPage />} />
+
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
