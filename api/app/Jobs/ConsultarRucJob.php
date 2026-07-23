@@ -22,7 +22,9 @@ class ConsultarRucJob implements ShouldQueue
 
     public function __construct(
         private readonly string $ruc,
-    ) {}
+    ) {
+        $this->onQueue('sri-consultas');
+    }
 
     public function handle(SriConsultaService $sriConsulta, ClasificadorService $clasificador): void
     {

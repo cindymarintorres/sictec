@@ -24,6 +24,7 @@ class LoteController extends Controller
         $import = new FacturasImport();
         Excel::import($import, $archivo);
 
+        $rucsTotales = $import->getRucs();
         $rucsUnicos = $import->getRucs()->unique()->values();
 
         if ($rucsUnicos->isEmpty()) {
@@ -32,9 +33,12 @@ class LoteController extends Controller
             ], 422);
         }
 
-        $jobs = $rucsUnicos->map(fn ($ruc) => new ConsultarRucJob($ruc));
+        $jobs = $rucsUnicos->map(fn($ruc) => new ConsultarRucJob($ruc));
 
-        $batch = Bus::batch($jobs)->name('lote-facturas')->dispatch();
+        $batch = $batch = Bus::batch($jobs)
+            ->name('lote-facturas')
+            ->onQueue('sri-consultas')
+            ->dispatch();
 
         // El id del batch ya existe en este punto -> lo usamos para guardar el original
         Storage::disk('local')->putFileAs(
@@ -43,7 +47,12 @@ class LoteController extends Controller
             "original.{$extension}"
         );
 
-        return response()->json(['batch_id' => $batch->id], 201);
+        return response()->json([
+            'batch_id' => $batch->id,
+            'total_filas' => $rucsTotales->count(),
+            'rucs_unicos' => $rucsUnicos->count(),
+            'duplicados' => $rucsTotales->count() - $rucsUnicos->count(),
+        ], 201);
     }
 
     public function show(string $batchId)
@@ -77,7 +86,7 @@ class LoteController extends Controller
         }
 
         $rutaOriginal = collect(Storage::disk('local')->files("lotes/{$batchId}"))
-            ->first(fn ($path) => str_starts_with(basename($path), 'original.'));
+            ->first(fn($path) => str_starts_with(basename($path), 'original.'));
 
         if (! $rutaOriginal) {
             return response()->json(['message' => 'Archivo original no encontrado'], 404);
@@ -89,5 +98,22 @@ class LoteController extends Controller
             new FacturasExport($batchId, Storage::disk('local')->path($rutaOriginal)),
             "lote-{$batchId}-clasificado.{$ext}"
         );
+    }
+
+    public function cancelar(string $batchId)
+    {
+        $batch = Bus::findBatch($batchId);
+
+        if (! $batch) {
+            return response()->json(['message' => 'Lote no encontrado'], 404);
+        }
+
+        if ($batch->finished()) {
+            return response()->json(['message' => 'El lote ya terminó, no se puede cancelar'], 409);
+        }
+
+        $batch->cancel();
+
+        return response()->json(['message' => 'Lote cancelado']);
     }
 }
