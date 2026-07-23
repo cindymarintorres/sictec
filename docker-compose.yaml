@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-sictecpass}
       POSTGRES_DB: ${DB_DATABASE:-sictec}
     ports:
-      - "${DB_PORT:-3002}:5432"
+      - "${DB_PORT_HOST:-3002}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -86,8 +86,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: ./docker/web/Dockerfile
+      context: ./web
+      dockerfile: ../docker/web/Dockerfile
     container_name: sictec_web
     restart: unless-stopped
     ports:
@@ -96,6 +96,7 @@ services:
       NODE_ENV: development
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
       VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://sictec_api:8000}
+      SICTEC_API_KEY: ${SICTEC_API_KEY}
     volumes:
       - ./web:/app
       - /app/node_modules

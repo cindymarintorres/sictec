@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Copiamos solo el package.json primero para aprovechar el cache de capas de Docker:
 # si no cambian las dependencias, esta capa no se reconstruye en cada build.
-COPY web/package.json web/pnpm-lock.yaml* ./
+COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install
 
 # El resto del código NO hace falta copiarlo aquí: en desarrollo se monta como
