@@ -8,6 +8,7 @@ use App\Jobs\ConsultarRucJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -51,6 +52,12 @@ class LoteController extends Controller
         $batch = Bus::batch($jobs)
             ->name($loteUuid)
             ->onQueue('sri-consultas')
+            ->then(function ($batch) {
+                Log::info("Batch {$batch->id} completado", [
+                    'total' => $batch->totalJobs,
+                    'fallidos' => $batch->failedJobs,
+                ]);
+            })
             ->dispatch();
 
         return response()->json([

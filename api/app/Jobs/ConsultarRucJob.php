@@ -12,6 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ConsultarRucJob implements ShouldQueue
 {
@@ -32,7 +33,10 @@ class ConsultarRucJob implements ShouldQueue
             return;
         }
 
+        Log::info("Consultando RUC {$this->ruc}", ['batch' => $this->batch()->id]);
+        
         if (! $sriConsulta->validar($this->ruc)) {
+            Log::info("RUC {$this->ruc} inválido según el SRI");
             Cache::put($this->claveCache(), [
                 'actividad_economica' => null,
                 'categoria' => 'RUC inválido',
@@ -42,10 +46,12 @@ class ConsultarRucJob implements ShouldQueue
 
         $contribuyente = $sriConsulta->consultar($this->ruc);
         $actividad = $contribuyente['actividadEconomicaPrincipal'] ?? null;
+        $categoria = $clasificador->clasificar($actividad);
 
+        Log::info("RUC {$this->ruc} clasificado", ['categoria' => $categoria]);
         Cache::put($this->claveCache(), [
             'actividad_economica' => $actividad,
-            'categoria' => $clasificador->clasificar($actividad),
+            'categoria' => $categoria,
         ], now()->addHours(6));
     }
 
