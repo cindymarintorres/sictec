@@ -22,7 +22,7 @@ class LoteController extends Controller
         $extension = $archivo->getClientOriginalExtension();
 
         $import = new FacturasImport();
-        Excel::import($import, $archivo);
+        $import->leerDesde($archivo->getRealPath());
 
         $rucsTotales = $import->getRucs();
         $rucsUnicos = $import->getRucs()->unique()->values();
@@ -44,7 +44,7 @@ class LoteController extends Controller
         Storage::disk('local')->putFileAs(
             "lotes/{$batch->id}",
             $archivo,
-            "original.{$extension}"
+            $archivo->getClientOriginalName()
         );
 
         return response()->json([
@@ -84,19 +84,18 @@ class LoteController extends Controller
         if (! $batch->finished()) {
             return response()->json(['message' => 'El lote aún no ha terminado de procesarse'], 409);
         }
-
-        $rutaOriginal = collect(Storage::disk('local')->files("lotes/{$batchId}"))
-            ->first(fn($path) => str_starts_with(basename($path), 'original.'));
+        $rutaOriginal = collect(Storage::disk('local')->files("lotes/{$batchId}"))->first();
 
         if (! $rutaOriginal) {
             return response()->json(['message' => 'Archivo original no encontrado'], 404);
         }
 
+        $nombreBase = pathinfo($rutaOriginal, PATHINFO_FILENAME);
         $ext = pathinfo($rutaOriginal, PATHINFO_EXTENSION);
 
         return Excel::download(
             new FacturasExport($batchId, Storage::disk('local')->path($rutaOriginal)),
-            "lote-{$batchId}-clasificado.{$ext}"
+            "{$nombreBase}_clasificado.{$ext}"
         );
     }
 
