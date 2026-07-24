@@ -15,16 +15,17 @@
 return [
 
     // --- Combustible ---
-    'G47300101' => 'Combustible', // venta al por menor de combustibles para vehiculos y motos
+    'G473001' => 'Combustible', // venta al por menor de combustibles para vehiculos y motos (cubre nivel ACTIVIDAD y SUBNIVEL)
 
     // --- Repuestos y Accesorios ---
     'G4530' => 'Repuestos y Accesorios',  // venta partes/piezas/accesorios vehiculos
     'G45400' => 'Repuestos y Accesorios', // venta partes/piezas/accesorios motocicletas
 
     // --- Farmacia ---
-    'G46492201' => 'Farmacia', // venta al por mayor de productos farmaceuticos
-    'G47720101' => 'Farmacia', // venta al por menor de productos farmaceuticos
+    'G464922' => 'Farmacia', // venta al por mayor de productos farmaceuticos (cubre ACTIVIDAD+SUBNIVEL)
+    'G477201' => 'Farmacia', // venta al por menor de productos farmaceuticos (cubre ACTIVIDAD+SUBNIVEL)
     'C21'       => 'Farmacia', // fabricacion de productos farmaceuticos
+    'G47720102' => 'Salud y Asistencia Medica', // venta al por menor de productos ortopedicos
 
     // --- Hospedaje ---
     'I551' => 'Hospedaje', // hoteles, hoteles de suites, apart hoteles
@@ -34,8 +35,7 @@ return [
     'K66' => 'Seguros', // actividades auxiliares a seguros y fondos de pensiones
 
     // --- Papeleria y Oficina ---
-    'G47610301' => 'Papeleria y Oficina', // venta al por menor articulos de papeleria
-    'G47610302' => 'Papeleria y Oficina', // venta al por menor articulos de oficina
+    'G476103' => 'Papeleria y Oficina', // venta al por menor de articulos de oficina y papeleria (cubre ACTIVIDAD+SUBNIVEL)
 
     // --- Arriendo de Inmuebles ---
     'L681'    => 'Arriendo de Inmuebles', // compra-venta, alquiler y explotacion de bienes inmuebles propios
@@ -73,6 +73,7 @@ return [
 
     // --- Salud y Asistencia Medica ---
     'Q86' => 'Salud y Asistencia Medica',
+    'G47720102' => 'Salud y Asistencia Medica', // venta al por menor de productos ortopedicos
 
     // --- Pasajes y Transporte de Pasajeros ---
     'H49' => 'Pasajes y Transporte de Pasajeros', // ojo: H4923 ya esta tomado por Transporte y Fletes (mas especifico, gana)
@@ -99,43 +100,43 @@ return [
 
     // --- Veterinaria y Mascotas ---
     'M75'       => 'Veterinaria y Mascotas', // actividades veterinarias
-    'G46309701' => 'Veterinaria y Mascotas', // venta al por mayor alimento para mascotas
-    'G47732301' => 'Veterinaria y Mascotas', // venta al por menor de mascotas
-    'G47732302' => 'Veterinaria y Mascotas', // venta al por menor alimento para mascotas
-// --- Tecnologia ---
+    'G463097' => 'Veterinaria y Mascotas', // venta al por mayor alimento para mascotas (cubre ACTIVIDAD+SUBNIVEL)
+    'G477323' => 'Veterinaria y Mascotas', // venta al por menor de mascotas y alimento para mascotas (cubre ACTIVIDAD+SUBNIVEL)
+    'G46492202' => 'Veterinaria y Mascotas', // venta al por mayor de productos veterinarios
+    // --- Tecnologia ---
     'G4741' => 'Tecnologia', // venta al por menor de computadoras y equipo informatico
- 
+
     // --- Electrodomesticos y Electronica (nueva, ya existia en la lista original) ---
     'C2750' => 'Electrodomesticos y Electronica', // fabricacion de aparatos electricos/termoelectricos de uso domestico
- 
+
     // --- Vestimenta y Calzado ---
     'G4641' => 'Vestimenta y Calzado', // venta al por mayor de prendas de vestir y calzado
- 
+
     // --- Combustible (mayorista, complementa G47300101 que es minorista) ---
     'G4661' => 'Combustible', // venta al por mayor de combustibles liquidos y aceite de petroleo
- 
+
     // --- Mantenimiento Vehicular ---
-    'G47300201' => 'Mantenimiento Vehicular', // venta al por menor de productos de limpieza/lubricantes para vehiculos
-    'C19200202' => 'Mantenimiento Vehicular', // fabricacion de grasas lubricantes -- se puede mover a Combustible si prefieres
- 
+    'G473002' => 'Mantenimiento Vehicular', // venta al por menor de productos lubricantes/refrigerantes para vehiculos (cubre nivel ACTIVIDAD y SUBNIVEL),
+    'C192002' => 'Mantenimiento Vehicular', // fabricacion de aceites y grasas lubricantes a base de petroleo (cubre ACTIVIDAD+SUBNIVEL, incluye tanto aceites como grasas)
+
     // --- Venta de Vehiculos automotores (nueva, ya existia en la lista original) ---
     'G4510' => 'Venta de Vehiculos automotores', // venta de vehiculos nuevos y usados (todo tipo)
- 
+
     // --- Hospedaje ---
     'I552' => 'Hospedaje', // espacios/instalaciones para vehiculos de recreo (camping) -- clase hermana de I551 (hoteles)
- 
+
     // ============================================================
     // Las 3 siguientes NO tenian categoria clara -- se asignaron a la
     // mas parecida que ya existia, tal como pediste. Revisalas cuando
     // puedas y me dices si las quieres mover:
     // ============================================================
- 
+
     // --- Alimentacion ---
     'G4711' => 'Alimentacion', // venta al por menor en supermercados (variedad, predominan alimentos/bebidas)
- 
+
     // --- Comercio Minorista Especializado (nueva, ya existia en la lista original) ---
     'G4799' => 'Comercio Minorista Especializado', // venta al por menor por comisionistas / casas de subastas
- 
+
     // --- Manufactura y Produccion (catch-all generico ya existente) ---
     'C2592' => 'Manufactura y Produccion', // servicios de maquinado de metales por contrato (subcontratista industrial)
 
