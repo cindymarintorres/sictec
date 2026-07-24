@@ -103,10 +103,6 @@ docker exec -it sictec_api php artisan key:generate --show
 # Copiar el valor devuelto dentro de APP_KEY en el .env, y reiniciar:
 docker compose restart api worker
 
-# Ver logs de un servicio
-docker compose logs -f api
-docker compose logs -f worker
-
 # Acceder al contenedor de la API
 docker exec -it sictec_api sh
 
@@ -115,6 +111,82 @@ docker exec -it sictec_api php artisan migrate
 
 # Detener sin eliminar volúmenes
 docker compose stop
+```
+
+#### 📦 Worker y logs
+
+```bash
+# Logs en vivo
+docker compose logs -f api
+docker compose logs -f worker
+
+# Reiniciar solo el worker (recarga código nuevo de Jobs)
+docker compose restart worker
+
+# Reiniciar api + worker juntos (necesario si el cambio afecta a ambos,
+# ej. algo que se despacha desde un Controller)
+docker compose restart api worker
+
+# Estado de los contenedores
+docker ps
+```
+
+#### 🗄️ Colas y Jobs
+
+```bash
+# Ver estado de las colas (pendientes, fallidos, más antiguo pendiente)
+docker exec -it sictec_api php artisan queue:monitor sri-consultas,default
+
+# Ver Jobs pendientes en la tabla (detalle crudo)
+docker exec -it sictec_postgres psql -U sictecuser -d sictec -c "SELECT id, queue, attempts, created_at FROM jobs ORDER BY id;"
+
+# Ver Jobs fallidos (resumen)
+docker exec -it sictec_api php artisan queue:failed
+
+# Ver la excepción completa del último Job fallido
+docker exec -it sictec_postgres psql -U sictecuser -d sictec -c "SELECT exception FROM failed_jobs ORDER BY id DESC LIMIT 1;"
+
+# Reintentar un Job fallido específico (uuid sale de queue:failed)
+docker exec -it sictec_api php artisan queue:retry {uuid}
+docker exec -it sictec_api php artisan queue:retry all
+
+# Borrar Jobs fallidos
+docker exec -it sictec_api php artisan queue:forget {uuid}
+docker exec -it sictec_api php artisan queue:flush
+
+# Borrar Jobs pendientes de una cola específica (usar con cuidado)
+docker exec -it sictec_postgres psql -U sictecuser -d sictec -c "DELETE FROM jobs WHERE queue = 'sri-consultas';"
+```
+
+#### 📊 Batches
+
+```bash
+# Ver estado de los últimos batches
+docker exec -it sictec_postgres psql -U sictecuser -d sictec -c "SELECT id, total_jobs, pending_jobs, failed_jobs, finished_at FROM job_batches ORDER BY created_at DESC LIMIT 5;"
+```
+
+#### 🧠 Cache
+
+```bash
+# Ver claves de cache de un lote específico
+docker exec -it sictec_postgres psql -U sictecuser -d sictec -c "SELECT key, value FROM cache WHERE key LIKE 'lote:{batch_id}%';"
+
+# Borrar cache de un lote específico
+docker exec -it sictec_postgres psql -U sictecuser -d sictec -c "DELETE FROM cache WHERE key LIKE 'lote:{batch_id}%';"
+
+# Limpiar TODO el cache (drástico, solo para reset completo en dev)
+docker exec -it sictec_api php artisan cache:clear
+
+# Limpiar config/rutas/vistas cacheadas (necesario tras cambiar algo en config/*.php)
+docker exec -it sictec_api php artisan optimize:clear
+```
+
+#### 🔍 Probar un RUC puntual sin subir un archivo
+
+Corre la misma lógica que `ConsultarRucJob::handle()`, de forma síncrona e inmediata — útil para verificar si un RUC clasifica correctamente antes de subir un lote completo:
+
+```bash
+docker exec -it sictec_api php artisan tinker --execute="\$ruc = 'RUC_AQUI'; \$sri = app(App\Services\SriConsultaService::class); \$clasificador = app(App\Services\ClasificadorService::class); \$contribuyente = \$sri->consultar(\$ruc); \$actividad = \$contribuyente['actividadEconomicaPrincipal'] ?? null; dump(['actividad' => \$actividad, 'categoria' => \$clasificador->clasificar(\$actividad)]);"
 ```
 
 ---
