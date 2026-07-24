@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter } from "react-router";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import { env } from "@/config/env";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,9 @@ export const AppProviders = ({ children }: Props) => (
       <BrowserRouter>
           {children}
       </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {env.VITE_SHOW_REACT_QUERY_DEVTOOLS && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   </ThemeProvider>
 );

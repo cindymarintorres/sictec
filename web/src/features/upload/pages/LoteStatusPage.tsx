@@ -135,8 +135,8 @@ export const LoteStatusPage = () => {
           ¡Procesamiento completo!
         </EmptyTitle>
         <EmptyDescription className="text-md">
-          El archivo se procesó correctamente y la columna{" "}
-          <strong>ACTIVIDAD_ECONOMICA</strong> fue agregada.
+          El archivo se procesó correctamente y las columnas{" "}
+          <strong>ACTIVIDAD_ECONOMICA y CATEGORIA</strong> fueron agregadas.
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent className="flex flex-1 flex-row justify-center gap-2 items-center mt-5">
