@@ -25,7 +25,6 @@ class LoteController extends Controller
 
         $import->leerDesde($archivo->getRealPath());
         $rucsTotales = $import->getRucs();
-
         $rucsUnicos = $import->getRucs()->unique()->values();
 
         if ($rucsUnicos->isEmpty()) {
@@ -36,7 +35,8 @@ class LoteController extends Controller
 
         $loteUuid = (string) Str::uuid();
 
-        // Persistimos el original ANTES de crear el batch, sin depender de su id
+        // Persistimos el original ANTES de crear el batch: si esto falla,
+        // el batch nunca se llega a crear.
         Storage::disk('local')->putFileAs(
             "lotes/{$loteUuid}",
             $archivo,
@@ -45,13 +45,13 @@ class LoteController extends Controller
 
         $jobs = $rucsUnicos->map(fn($ruc) => new ConsultarRucJob($ruc));
 
-        $batch = $batch = Bus::batch($jobs)
-            ->name('lote-facturas')
+        // El loteUuid viaja como "name" del batch: Laravel ya lo persiste en
+        // job_batches por su cuenta, así que show()/descargar() lo recuperan
+        // leyendo $batch->name, sin necesitar un Cache::put/get aparte.
+        $batch = Bus::batch($jobs)
+            ->name($loteUuid)
             ->onQueue('sri-consultas')
             ->dispatch();
-
-        // Mapeo batch_id -> lote_uuid para poder ubicar el archivo en show/descargar
-        Cache::put("lote-uuid:{$batch->id}", $loteUuid, now()->addDay());
 
         return response()->json([
             'batch_id' => $batch->id,
@@ -91,13 +91,8 @@ class LoteController extends Controller
             return response()->json(['message' => 'El lote aún no ha terminado de procesarse'], 409);
         }
 
-        $loteUuid = Cache::get("lote-uuid:{$batchId}");
-
-        if (! $loteUuid) {
-            return response()->json(['message' => 'Archivo original no encontrado'], 404);
-        }
-
-        $rutaOriginal = collect(Storage::disk('local')->files("lotes/{$batchId}"))->first();
+        $loteUuid = $batch->name;
+        $rutaOriginal = collect(Storage::disk('local')->files("lotes/{$loteUuid}"))->first();
 
         if (! $rutaOriginal) {
             return response()->json(['message' => 'Archivo original no encontrado'], 404);
