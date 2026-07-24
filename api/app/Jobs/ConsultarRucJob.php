@@ -32,6 +32,14 @@ class ConsultarRucJob implements ShouldQueue
             return;
         }
 
+        if (! $sriConsulta->validar($this->ruc)) {
+            Cache::put($this->claveCache(), [
+                'actividad_economica' => null,
+                'categoria' => 'RUC inválido',
+            ], now()->addHours(6));
+            return;
+        }
+
         $contribuyente = $sriConsulta->consultar($this->ruc);
         $actividad = $contribuyente['actividadEconomicaPrincipal'] ?? null;
 
@@ -47,7 +55,7 @@ class ConsultarRucJob implements ShouldQueue
     }
 
     public function middleware(): array
-{
-    return [new RateLimited('sri-consultas')];
-}
+    {
+        return [new RateLimited('sri-consultas')];
+    }
 }
