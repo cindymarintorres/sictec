@@ -3,10 +3,9 @@
 namespace App\Imports;
 
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class FacturasImport implements ToCollection, WithHeadingRow
+class FacturasImport
 {
     protected Collection $rucs;
 
@@ -15,12 +14,39 @@ class FacturasImport implements ToCollection, WithHeadingRow
         $this->rucs = collect();
     }
 
-    // WithHeadingRow convierte "RUC_EMISOR" -> "ruc_emisor" automáticamente
-    public function collection(Collection $rows)
+    /**
+     * Lee el archivo con PhpSpreadsheet usando getFormattedValue(), igual que
+     * FacturasExport. Es crítico que ambos lean el RUC de la misma forma
+     * exacta: si Import y Export interpretan el mismo RUC de forma distinta
+     * (uno con cero a la izquierda, el otro sin él), la clave de cache
+     * jamás va a coincidir entre lo que el Job guarda y lo que el Export busca.
+     */
+    public function leerDesde(string $rutaArchivo): Collection
     {
-        $this->rucs = $rows->pluck('ruc_emisor')
+        $spreadsheet = IOFactory::load($rutaArchivo);
+        $hoja = $spreadsheet->getActiveSheet();
+
+        $filas = [];
+        foreach ($hoja->getRowIterator() as $fila) {
+            $valores = [];
+            foreach ($fila->getCellIterator() as $celda) {
+                $valores[] = $celda->getFormattedValue();
+            }
+            $filas[] = $valores;
+        }
+
+        $encabezados = array_shift($filas);
+        $indiceRuc = array_search('RUC_EMISOR', $encabezados, true);
+
+        if ($indiceRuc === false) {
+            return $this->rucs = collect();
+        }
+
+        return $this->rucs = collect($filas)
+            ->pluck($indiceRuc)
             ->filter()
-            ->map(fn ($ruc) => trim((string) $ruc));
+            ->map(fn ($ruc) => trim((string) $ruc))
+            ->values();
     }
 
     public function getRucs(): Collection
