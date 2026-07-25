@@ -87,51 +87,48 @@ export const LoteStatusPage = () => {
   }
 
   if (!estado.finished) {
-    if (estado.cancelled) {
-      return (
-        <Empty className="w-full">
-          <EmptyHeader className="max-w-md!">
-            <Spinner className="size-15" />
-            <EmptyTitle className="text-2xl font-medium">
-              Procesando Clasificaciones Tributarias
-            </EmptyTitle>
+    return (
+      <Empty className="w-full">
+        <EmptyHeader className="max-w-md!">
+          <Spinner className="size-15" />
+          <EmptyTitle className="text-2xl font-medium">
+            Procesando Clasificaciones Tributarias
+          </EmptyTitle>
 
+          <EmptyDescription className="text-md">
+            {estado.processed_jobs} de {estado.total_jobs} RUC procesados.
+            Consultando el SRI y clasificando actividades económicas. No cierres
+            esta pestaña.
+          </EmptyDescription>
+
+          {infoSubida && (infoSubida.duplicados ?? 0) > 0 && (
             <EmptyDescription className="text-md">
-              {estado.processed_jobs} de {estado.total_jobs} RUC procesados.
-              Consultando el SRI y clasificando actividades económicas. No
-              cierres esta pestaña.
+              {infoSubida.totalFilas} filas recibidas — {infoSubida.duplicados}{" "}
+              RUC duplicados fueron consolidados antes de consultar el SRI.
             </EmptyDescription>
-
-            {infoSubida && (infoSubida.duplicados ?? 0) > 0 && (
-              <EmptyDescription className="text-md">
-                {infoSubida.totalFilas} filas recibidas —{" "}
-                {infoSubida.duplicados} RUC duplicados fueron consolidados antes
-                de consultar el SRI.
-              </EmptyDescription>
-            )}
-            {pareceAtascado && (
-              <EmptyDescription className="text-yellow-600">
-                El procesamiento no ha avanzado en los últimos segundos. Puede
-                tomar más tiempo de lo normal, o haber un problema temporal — si
-                persiste, contacta soporte.
-              </EmptyDescription>
-            )}
-          </EmptyHeader>
-          <EmptyContent>
-            <Button
-              className="bg-blue-900 cursor-pointer"
-              size="lg"
-              onClick={() => cancelarMutation.mutate()}
-              disabled={cancelarMutation.isPending}
-            >
-              {cancelarMutation.isPending
-                ? "Cancelando..."
-                : "Cancelar operación"}
-            </Button>
-          </EmptyContent>
-        </Empty>
-      );
-    }
+          )}
+          {pareceAtascado && (
+            <EmptyDescription className="text-yellow-600">
+              El procesamiento no ha avanzado en los últimos segundos. Puede
+              tomar más tiempo de lo normal, o haber un problema temporal — si
+              persiste, contacta soporte.
+            </EmptyDescription>
+          )}
+        </EmptyHeader>
+        <EmptyContent>
+          <Button
+            className="bg-blue-900 cursor-pointer"
+            size="lg"
+            onClick={() => cancelarMutation.mutate()}
+            disabled={cancelarMutation.isPending}
+          >
+            {cancelarMutation.isPending
+              ? "Cancelando..."
+              : "Cancelar operación"}
+          </Button>
+        </EmptyContent>
+      </Empty>
+    );
   }
 
   if (estado.cancelled) {
@@ -170,6 +167,7 @@ export const LoteStatusPage = () => {
       </Empty>
     );
   }
+
   return (
     <Empty className="w-full">
       <EmptyHeader className="max-w-md!">
