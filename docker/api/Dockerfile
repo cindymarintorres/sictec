@@ -15,6 +15,11 @@ RUN apk add --no-cache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_pgsql pgsql zip mbstring gd
 
+# Memory limit por defecto (128M) es insuficiente para importar/exportar
+# archivos Excel de 5000+ registros con PhpSpreadsheet (api y worker
+# comparten esta imagen, así que aplica a ambos).
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
+
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
