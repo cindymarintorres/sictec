@@ -22,6 +22,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          memory: 256M
 
   api:
     build:
@@ -67,6 +74,13 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 256M
 
   worker:
     build:
@@ -81,6 +95,13 @@ services:
         condition: service_healthy
     environment: *api_env
     volumes: *api_volumes
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 256M
     networks:
       - sictec_network
 
@@ -101,6 +122,11 @@ services:
     volumes:
       - ./web:/app
       - /app/node_modules
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
     networks:
       - sictec_network
 
