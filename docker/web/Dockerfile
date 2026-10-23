@@ -1,4 +1,4 @@
-FROM cemarin/node-base:20-alpine
+FROM node:24-alpine
 ENV CI=true
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
